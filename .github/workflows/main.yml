@@ -1,8 +1,8 @@
 name: Rauma houses for sale
 
-on:
-  schedule:
-    - cron: '0 20 * * *'  # Daily
+on: workflow_call
+  #schedule:
+   # - cron: '0 20 * * *'  # Daily
 
 jobs:
   rauma_appartments_data_get_daily:
