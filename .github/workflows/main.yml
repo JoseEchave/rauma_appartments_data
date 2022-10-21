@@ -1,0 +1,43 @@
+name: cegaufbot
+
+on:
+  schedule:
+    - cron: '0 20 * * *'  # Daily
+
+jobs:
+  rauma_appartments_data_get_daily:
+    runs-on: macOS-latest
+    env:
+      ETUOVI_TOKEN: ${{ secrets.ETUOVI_TOKEN }}
+      ETUOVI_UUIDC: ${{ secrets.ETUOVI_UUIDC }}
+      ETUOVI_SESSION: ${{ secrets.ETUOVI_SESSION }}
+      ETUOVI_BSID: ${{ secrets.ETUOVI_BSID }}
+      ETUOVI_INIT: ${{ secrets.ETUOVI_INIT }}
+      OIKOTIE_PHP_SESSION: ${{ secrets.OIKOTIE_PHP_SESSION }}
+      OIKOTIE_USER: ${{ secrets.OIKOTIE_USER }}
+      OIKOTIE_AWSALB: ${{ secrets.OIKOTIE_AWSALB }}
+      OIKOTIE_AWSALBCORS: ${{ secrets.OIKOTIE_AWSALBCORS }}
+      OIKOTIE_CUID: ${{ secrets.OIKOTIE_CUID }}
+      OIKOTIE_TOKEN: ${{ secrets.OIKOTIE_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-r@v2
+      - name: Install httr package
+        run: Rscript -e 'install.packages("httr", dependencies = TRUE)'
+      - name: Install jsonlite package
+        run: Rscript -e 'install.packages("jsonlite", dependencies = TRUE)'
+      - name: Install glue package
+        run: Rscript -e 'install.packages("glue", dependencies = TRUE)'
+      - name: Get daily data from oikotie and etuovi
+        run: Rscript source.R
+      - name: setup git config
+        run: |
+          # setup the username and email. I tend to use 'GitHub Actions Bot' with no email by default
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+      - name: commit
+        run: |
+          # Stage the file, commit and push
+          git add output/*
+          git commit -m "Add data for $(date)"
+          git push origin main
