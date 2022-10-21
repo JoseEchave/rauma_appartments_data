@@ -1,6 +1,6 @@
 name: Rauma houses for sale
 
-on: workflow_call
+on: workflow_dispatch
   #schedule:
    # - cron: '0 20 * * *'  # Daily
 
