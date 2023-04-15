@@ -1,18 +1,24 @@
 require(httr)
 
-etuovi_token <-  Sys.getenv("ETUOVI_TOKEN")
-etuovi_uuidc <- Sys.getenv("ETUOVI_UUIDC")
-etuovi_session <- Sys.getenv("ETUOVI_SESSION")
-etuovi_bsid <- Sys.getenv("ETUOVI_BSID")
-etuovi_init <- Sys.getenv("ETUOVI_INIT")
+get_cookies <- function(){
+  
+  headers <- c(
+    "User-Agent" = "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36",
+    "Accept" = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+  )
+  
+  response <- httr::GET("https://www.etuovi.com",httr::add_headers(headers))
+  httr::cookies(response)
+  
+}
+cookies_df <- get_cookies()
+etuovi_token <- subset(cookies_df,name == "XSRF-TOKEN")$value
+etuovi_session <- subset(cookies_df,name == "SESSION")$value
 
 #Cookies
 cookies = c(
   'XSRF-TOKEN' = etuovi_token,
-  'uuidc' = etuovi_uuidc,
-  'SESSION' = etuovi_session,
-  'sammio-bsid' = etuovi_bsid,
-  'sammio-init-time' = etuovi_init
+  'SESSION' = etuovi_session
 )
 
 #Header
