@@ -1,0 +1,27 @@
+library(tidyverse)
+####ETUOVI####
+#Data from Github
+list_sequence_dates <- seq(as.Date("2022-10-21"),Sys.Date() -1 ,by = "1 day")
+github_files_urls <- glue::glue("https://raw.githubusercontent.com/JoseEchave/rauma_appartments_data/main/data/appartments_etuovi_{list_sequence_dates}.json")
+#Read as df
+read_etuovi_json_add_date <- function(file_w_path){
+  date_file <- lubridate::ymd(stringr::str_extract(file_w_path,"[0-9]{4}-[0-9]{2}-[0-9]{2}"))
+  df_temp <-jsonlite::fromJSON(file_w_path)
+  df <- dplyr::mutate(df_temp,snapshot_date = date_file) %>%
+    unnest(office,names_repair = "universal",keep_empty = TRUE) %>% 
+    unnest(everything()) %>% 
+    rename(id = `id...1`,
+           #office_id = `id...15`,
+           office_name = name,
+           office_customer_group_id = customerGroupId,
+           office_logo_uri = logoUri,
+           office_webpage = webPageUrl) %>% 
+    janitor::clean_names()
+  df 
+}
+
+all_historical_data <-map_dfr(github_files_urls, ~{
+  tryCatch(read_etuovi_json_add_date(.x), error = function(e) NULL, finally = invisible(NULL))
+}, .error_recover = function(e) NULL)
+
+write_csv(all_historical_data,"output/all_collected_data.csv")
